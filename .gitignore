@@ -9,12 +9,16 @@ build/
 *.dex
 
 # Java class files
+*.class
 
 # generated files
-out/
+bin/
+classes/
+gen/
 
 # IDEA files
 .idea/
+out/
 *.iml
 
 # Eclipse files
