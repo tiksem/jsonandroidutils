@@ -4,6 +4,8 @@ import com.jsonutils.Json;
 import com.utils.framework.OnError;
 import com.utils.framework.collections.NavigationList;
 import com.utils.framework.collections.OnLoadingFinished;
+import com.utilsframework.android.network.GetRequestExecutor;
+import com.utilsframework.android.network.RequestExecutor;
 import com.utilsframework.android.threading.Threading;
 
 import java.io.IOException;
@@ -20,6 +22,7 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
     private Class<T> aClass;
     private RequestExecutor requestExecutor;
     private Map<String, Object> args;
+    private String jsonKey;
 
     public int getLimit() {
         return limit;
@@ -47,16 +50,17 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
         this.offsetParamName = offsetParamName;
     }
 
-    public JsonAsyncNavigationList(Class<T> aClass, String url,
+    public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
                                    Map<String, String> args, RequestExecutor requestExecutor) {
         this.aClass = aClass;
         this.url = url;
+        this.jsonKey = jsonKey;
         this.requestExecutor = requestExecutor;
-        this.args = new HashMap<>(args);
+        this.args = args != null ? new HashMap<>(args) : new HashMap<>();
     }
 
-    public JsonAsyncNavigationList(Class<T> aClass, String url, Map<String, String> args) {
-        this(aClass, url, args, new GetRequestExecutor());
+    public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey, Map<String, String> args) {
+        this(aClass, url, jsonKey, args, new GetRequestExecutor());
     }
 
     @Override
@@ -74,7 +78,7 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
 
             @Override
             public void onSuccess(List<T> elements) {
-                boolean isLastPage = elements.size() < limit;
+                boolean isLastPage = isLastPage(elements, limit);
                 onPageLoadingFinished.onLoadingFinished(elements, isLastPage);
             }
 
@@ -82,7 +86,11 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
             public void onError(IOException error) {
                 onError.onError(error);
             }
-        });
+        }, IOException.class);
+    }
+
+    protected boolean isLastPage(List<T> elements, int limit) {
+        return elements.size() < limit;
     }
 
     protected List<T> getElements(String url, Map<String, Object> args,
@@ -93,10 +101,18 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
     }
 
     protected List<T> parse(String response, Class<T> aClass) throws IOException {
-        return Json.parseJsonArray(response, aClass);
+        if (jsonKey == null) {
+            return Json.parseJsonArray(response, aClass);
+        } else {
+            return Json.readList(response, jsonKey, aClass);
+        }
     }
 
     protected String request(String url, Map<String, Object> args, RequestExecutor requestExecutor) throws IOException {
         return requestExecutor.executeRequest(url, args);
+    }
+
+    protected final Map<String, Object> getArgs() {
+        return args;
     }
 }
