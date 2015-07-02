@@ -63,10 +63,14 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
         this(aClass, url, jsonKey, args, new GetRequestExecutor());
     }
 
+    protected int getOffset() {
+        return getLoadedElementsCount();
+    }
+
     @Override
     public void getElementsOfPage(int pageNumber, OnLoadingFinished<T> onPageLoadingFinished,
                                   OnError onError) {
-        int offset = pageNumber * limit;
+        int offset = getOffset();
         args.put(offsetParamName, offset);
 
         Threading.executeAsyncTask(new Threading.Task<IOException, List<T>>() {
