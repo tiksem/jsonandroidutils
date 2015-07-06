@@ -119,4 +119,8 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
     protected final Map<String, Object> getArgs() {
         return args;
     }
+
+    public String getJsonKey() {
+        return jsonKey;
+    }
 }
