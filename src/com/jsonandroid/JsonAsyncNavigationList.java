@@ -51,7 +51,9 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
     }
 
     public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
-                                   Map<String, Object> args, RequestExecutor requestExecutor) {
+                                   Map<String, Object> args, RequestExecutor requestExecutor,
+                                   List<T> preloadedElements) {
+        super(preloadedElements, Integer.MAX_VALUE);
         this.aClass = aClass;
         this.url = url;
         this.jsonKey = jsonKey;
@@ -59,12 +61,17 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
         this.args = args != null ? new HashMap<>(args) : new HashMap<>();
     }
 
+    public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
+                                   Map<String, Object> args, RequestExecutor requestExecutor) {
+        this(aClass, url, jsonKey, args, requestExecutor, null);
+    }
+
     public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey, Map<String, Object> args) {
         this(aClass, url, jsonKey, args, new GetRequestExecutor());
     }
 
     protected int getOffset() {
-        return getLoadedElementsCount();
+        return getElementsCount();
     }
 
     @Override
