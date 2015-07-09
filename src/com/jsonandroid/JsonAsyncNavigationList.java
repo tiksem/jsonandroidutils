@@ -4,8 +4,8 @@ import com.jsonutils.Json;
 import com.utils.framework.OnError;
 import com.utils.framework.collections.NavigationList;
 import com.utils.framework.collections.OnLoadingFinished;
-import com.utilsframework.android.network.GetRequestExecutor;
-import com.utilsframework.android.network.RequestExecutor;
+import com.utils.framework.network.GetRequestExecutor;
+import com.utils.framework.network.RequestExecutor;
 import com.utilsframework.android.threading.Threading;
 
 import java.io.IOException;
