@@ -88,14 +88,13 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
             }
 
             @Override
-            public void onSuccess(List<T> elements) {
-                boolean isLastPage = isLastPage(elements, limit);
-                onPageLoadingFinished.onLoadingFinished(elements, isLastPage);
-            }
-
-            @Override
-            public void onError(IOException error) {
-                onError.onError(error);
+            public void onComplete(List<T> elements, IOException error) {
+                if (error == null) {
+                    boolean isLastPage = isLastPage(elements, limit);
+                    onPageLoadingFinished.onLoadingFinished(elements, isLastPage);
+                } else {
+                    onError.onError(error);
+                }
             }
         }, IOException.class);
     }
