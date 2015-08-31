@@ -1,9 +1,11 @@
 package com.jsonandroid;
 
 import com.jsonutils.Json;
+import com.utils.framework.KeyProvider;
 import com.utils.framework.OnError;
 import com.utils.framework.collections.NavigationList;
 import com.utils.framework.collections.OnLoadingFinished;
+import com.utils.framework.collections.UniqueNavigationList;
 import com.utils.framework.network.GetRequestExecutor;
 import com.utils.framework.network.RequestExecutor;
 import com.utilsframework.android.threading.Threading;
@@ -14,7 +16,7 @@ import java.util.*;
 /**
  * Created by CM on 6/16/2015.
  */
-public class JsonAsyncNavigationList<T> extends NavigationList<T> {
+public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
     private int limit = 10;
     private String limitParamName = "limit";
     private String offsetParamName = "offset";
@@ -128,5 +130,15 @@ public class JsonAsyncNavigationList<T> extends NavigationList<T> {
 
     public String getJsonKey() {
         return jsonKey;
+    }
+
+    @Override
+    protected boolean shouldAddElement(T element) {
+        return super.shouldAddElement(element);
+    }
+
+    @Override
+    protected KeyProvider<Object, T> getKeyProvider() {
+        return null;
     }
 }
