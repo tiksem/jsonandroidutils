@@ -60,7 +60,7 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
         this.url = url;
         this.jsonKey = jsonKey;
         this.requestExecutor = requestExecutor;
-        this.args = args != null ? new HashMap<>(args) : new HashMap<>();
+        this.args = args != null ? new HashMap<>(args) : new HashMap<String, Object>();
     }
 
     public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
@@ -77,8 +77,8 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
     }
 
     @Override
-    public void getElementsOfPage(int pageNumber, OnLoadingFinished<T> onPageLoadingFinished,
-                                  OnError onError) {
+    public void getElementsOfPage(int pageNumber, final OnLoadingFinished<T> onPageLoadingFinished,
+                                  final OnError onError) {
         int offset = getOffset();
         args.put(offsetParamName, offset);
 
