@@ -1,5 +1,6 @@
 package com.jsonandroid;
 
+import android.os.AsyncTask;
 import com.jsonutils.Json;
 import com.utils.framework.KeyProvider;
 import com.utils.framework.OnError;
@@ -8,6 +9,8 @@ import com.utils.framework.collections.OnLoadingFinished;
 import com.utils.framework.collections.UniqueNavigationList;
 import com.utils.framework.network.GetRequestExecutor;
 import com.utils.framework.network.RequestExecutor;
+import com.utilsframework.android.network.AsyncRequestExecutorManager;
+import com.utilsframework.android.network.RequestManager;
 import com.utilsframework.android.threading.Threading;
 
 import java.io.IOException;
@@ -25,6 +28,7 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
     private RequestExecutor requestExecutor;
     private Map<String, Object> args;
     private String jsonKey;
+    private RequestManager requestManager;
 
     public int getLimit() {
         return limit;
@@ -52,24 +56,30 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
         this.offsetParamName = offsetParamName;
     }
 
-    public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
-                                   Map<String, Object> args, RequestExecutor requestExecutor,
+    public JsonAsyncNavigationList(Class<T> aClass,
+                                   String url,
+                                   String jsonKey,
+                                   Map<String, Object> args,
+                                   RequestExecutor requestExecutor,
+                                   RequestManager requestManager,
                                    List<T> preloadedElements) {
         super(preloadedElements, Integer.MAX_VALUE);
         this.aClass = aClass;
         this.url = url;
         this.jsonKey = jsonKey;
         this.requestExecutor = requestExecutor;
+        this.requestManager = requestManager;
         this.args = args != null ? new HashMap<>(args) : new HashMap<String, Object>();
     }
 
     public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
-                                   Map<String, Object> args, RequestExecutor requestExecutor) {
-        this(aClass, url, jsonKey, args, requestExecutor, null);
+                                   Map<String, Object> args, RequestExecutor requestExecutor,
+                                   RequestManager requestManager) {
+        this(aClass, url, jsonKey, args, requestExecutor, requestManager, null);
     }
 
     public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey, Map<String, Object> args) {
-        this(aClass, url, jsonKey, args, new GetRequestExecutor());
+        this(aClass, url, jsonKey, args, new GetRequestExecutor(), new AsyncRequestExecutorManager());
     }
 
     protected int getOffset() {
@@ -82,7 +92,7 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
         int offset = getOffset();
         args.put(offsetParamName, offset);
 
-        Threading.executeAsyncTask(new Threading.Task<IOException, List<T>>() {
+        requestManager.execute(new Threading.Task<IOException, List<T>>() {
             @Override
             public List<T> runOnBackground() throws IOException {
                 args.put(limitParamName, limit);
@@ -98,10 +108,19 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
                     onError.onError(error);
                 }
             }
-        }, IOException.class);
+
+            @Override
+            public void onCancelled(List<T> page, IOException error) {
+                onPageLoadingFinished.onLoadingFinished(CANCELLED_PAGE, false);
+            }
+        });
     }
 
     protected boolean isLastPage(List<T> elements, int limit) {
+        if (elements == CANCELLED_PAGE) {
+            return false;
+        }
+
         return elements.size() < limit;
     }
 
