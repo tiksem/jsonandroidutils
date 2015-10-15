@@ -83,7 +83,7 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
     }
 
     protected int getOffset() {
-        return getElementsCount();
+        return getLoadedPagesCount() * limit;
     }
 
     @Override
