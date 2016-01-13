@@ -1,10 +1,8 @@
 package com.jsonandroid;
 
-import android.os.AsyncTask;
 import com.jsonutils.Json;
 import com.utils.framework.KeyProvider;
 import com.utils.framework.OnError;
-import com.utils.framework.collections.NavigationList;
 import com.utils.framework.collections.OnLoadingFinished;
 import com.utils.framework.collections.UniqueNavigationList;
 import com.utils.framework.network.GetRequestExecutor;
@@ -14,7 +12,9 @@ import com.utilsframework.android.network.RequestManager;
 import com.utilsframework.android.threading.Threading;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by CM on 6/16/2015.
