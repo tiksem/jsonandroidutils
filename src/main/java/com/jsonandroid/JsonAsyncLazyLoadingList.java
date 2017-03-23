@@ -4,11 +4,10 @@ import com.jsonutils.Json;
 import com.utils.framework.KeyProvider;
 import com.utils.framework.OnError;
 import com.utils.framework.collections.OnLoadingFinished;
-import com.utils.framework.collections.UniqueNavigationList;
+import com.utils.framework.collections.UniqueLazyLoadingList;
 import com.utils.framework.network.GetRequestExecutor;
 import com.utils.framework.network.RequestExecutor;
-import com.utilsframework.android.network.AsyncRequestExecutorManager;
-import com.utilsframework.android.network.RequestManager;
+import com.utilsframework.android.network.LegacyRequestManager;
 import com.utilsframework.android.threading.Threading;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.Map;
 /**
  * Created by CM on 6/16/2015.
  */
-public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
+public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
     private int limit = 10;
     private String limitParamName = "limit";
     private String offsetParamName = "offset";
@@ -28,7 +27,7 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
     private RequestExecutor requestExecutor;
     private Map<String, Object> args;
     private String jsonKey;
-    private RequestManager requestManager;
+    private LegacyRequestManager requestManager;
 
     public int getLimit() {
         return limit;
@@ -56,13 +55,13 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
         this.offsetParamName = offsetParamName;
     }
 
-    public JsonAsyncNavigationList(Class<T> aClass,
-                                   String url,
-                                   String jsonKey,
-                                   Map<String, Object> args,
-                                   RequestExecutor requestExecutor,
-                                   RequestManager requestManager,
-                                   List<T> preloadedElements) {
+    public JsonAsyncLazyLoadingList(Class<T> aClass,
+                                    String url,
+                                    String jsonKey,
+                                    Map<String, Object> args,
+                                    RequestExecutor requestExecutor,
+                                    LegacyRequestManager requestManager,
+                                    List<T> preloadedElements) {
         super(preloadedElements, Integer.MAX_VALUE);
         this.aClass = aClass;
         this.url = url;
@@ -72,14 +71,14 @@ public class JsonAsyncNavigationList<T> extends UniqueNavigationList<T> {
         this.args = args != null ? new HashMap<>(args) : new HashMap<String, Object>();
     }
 
-    public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey,
-                                   Map<String, Object> args, RequestExecutor requestExecutor,
-                                   RequestManager requestManager) {
+    public JsonAsyncLazyLoadingList(Class<T> aClass, String url, String jsonKey,
+                                    Map<String, Object> args, RequestExecutor requestExecutor,
+                                    LegacyRequestManager requestManager) {
         this(aClass, url, jsonKey, args, requestExecutor, requestManager, null);
     }
 
-    public JsonAsyncNavigationList(Class<T> aClass, String url, String jsonKey, Map<String, Object> args) {
-        this(aClass, url, jsonKey, args, new GetRequestExecutor(), new AsyncRequestExecutorManager());
+    public JsonAsyncLazyLoadingList(Class<T> aClass, String url, String jsonKey, Map<String, Object> args) {
+        this(aClass, url, jsonKey, args, new GetRequestExecutor(), new LegacyRequestManager());
     }
 
     protected int getOffset() {
