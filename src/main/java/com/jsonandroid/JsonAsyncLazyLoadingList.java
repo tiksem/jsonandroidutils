@@ -109,7 +109,7 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
             }
 
             @Override
-            public void onCancelled(List<T> page, IOException error) {
+            public void onCancelled() {
                 onPageLoadingFinished.onLoadingFinished(CANCELLED_PAGE, false);
             }
         });
