@@ -23,7 +23,7 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
     private String limitParamName = "limit";
     private String offsetParamName = "offset";
     private String url;
-    private Class<T> aClass;
+    private Class<? extends T> aClass;
     private RequestExecutor requestExecutor;
     private Map<String, Object> args;
     private String jsonKey;
@@ -55,7 +55,7 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
         this.offsetParamName = offsetParamName;
     }
 
-    public JsonAsyncLazyLoadingList(Class<T> aClass,
+    public JsonAsyncLazyLoadingList(Class<? extends T> aClass,
                                     String url,
                                     String jsonKey,
                                     Map<String, Object> args,
@@ -71,7 +71,7 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
         this.args = args != null ? new HashMap<>(args) : new HashMap<String, Object>();
     }
 
-    public JsonAsyncLazyLoadingList(Class<T> aClass, String url, String jsonKey,
+    public JsonAsyncLazyLoadingList(Class<? extends T> aClass, String url, String jsonKey,
                                     Map<String, Object> args, RequestExecutor requestExecutor,
                                     LegacyRequestManager requestManager) {
         this(aClass, url, jsonKey, args, requestExecutor, requestManager, null);
@@ -101,6 +101,7 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
             @Override
             public void onComplete(List<T> elements, IOException error) {
                 if (error == null) {
+                    onModifyLoadedElements(elements);
                     boolean isLastPage = isLastPage(elements, limit);
                     onPageLoadingFinished.onLoadingFinished(elements, isLastPage);
                 } else {
@@ -115,6 +116,10 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
         });
     }
 
+    protected void onModifyLoadedElements(List<T> elements) {
+
+    }
+
     protected boolean isLastPage(List<T> elements, int limit) {
         if (elements == CANCELLED_PAGE) {
             return false;
@@ -125,12 +130,12 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
 
     protected List<T> getElements(String url, Map<String, Object> args,
                                   RequestExecutor requestExecutor,
-                                  Class<T> aClass) throws IOException {
+                                  Class<? extends T> aClass) throws IOException {
         String response = request(url, args, requestExecutor);
         return parse(response, aClass);
     }
 
-    protected List<T> parse(String response, Class<T> aClass) throws IOException {
+    protected List<T> parse(String response, Class<? extends T> aClass) throws IOException {
         if (jsonKey == null) {
             return Json.parseJsonArray(response, aClass);
         } else {
