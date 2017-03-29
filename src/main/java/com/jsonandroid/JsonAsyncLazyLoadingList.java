@@ -5,6 +5,8 @@ import com.utils.framework.KeyProvider;
 import com.utils.framework.OnError;
 import com.utils.framework.collections.OnLoadingFinished;
 import com.utils.framework.collections.UniqueLazyLoadingList;
+import com.utils.framework.collections.cache.Cache;
+import com.utils.framework.io.Network;
 import com.utils.framework.network.GetRequestExecutor;
 import com.utils.framework.network.RequestExecutor;
 import com.utilsframework.android.network.LegacyRequestManager;
@@ -28,6 +30,7 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
     private Map<String, Object> args;
     private String jsonKey;
     private LegacyRequestManager requestManager;
+    private Cache<String, List<T>> cache;
 
     public int getLimit() {
         return limit;
@@ -131,8 +134,18 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
     protected List<T> getElements(String url, Map<String, Object> args,
                                   RequestExecutor requestExecutor,
                                   Class<? extends T> aClass) throws IOException {
-        String response = request(url, args, requestExecutor);
-        return parse(response, aClass);
+        url = Network.getOrderedQueryStringUrl(url, args);
+        if (cache != null && cache.contains(url)) {
+            return cache.get(url);
+        }
+
+        String response = request(url, requestExecutor);
+        List<T> result = parse(response, aClass);
+        if (cache != null) {
+            cache.put(url, result);
+        }
+
+        return result;
     }
 
     protected List<T> parse(String response, Class<? extends T> aClass) throws IOException {
@@ -143,8 +156,8 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
         }
     }
 
-    protected String request(String url, Map<String, Object> args, RequestExecutor requestExecutor) throws IOException {
-        return requestExecutor.executeRequest(url, args);
+    protected String request(String url, RequestExecutor requestExecutor) throws IOException {
+        return requestExecutor.executeRequest(url, null);
     }
 
     protected final Map<String, Object> getArgs() {
@@ -163,5 +176,9 @@ public class JsonAsyncLazyLoadingList<T> extends UniqueLazyLoadingList<T> {
     @Override
     protected KeyProvider<Object, T> getKeyProvider() {
         return null;
+    }
+
+    public void setCache(Cache<String, List<T>> cache) {
+        this.cache = cache;
     }
 }
